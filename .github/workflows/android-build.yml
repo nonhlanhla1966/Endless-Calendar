@@ -37,10 +37,14 @@ jobs:
           gradle-version: '8.7'
 
       - name: Build debug APK
-        run: gradle assembleDebug --stacktrace 2>&1 | tee build_log.txt
+        run: |
+          set -o pipefail
+          gradle assembleDebug --stacktrace 2>&1 | tee build_log.txt
+          echo "---- outputs dir ----" | tee -a build_log.txt
+          find app/build/outputs -type f 2>&1 | tee -a build_log.txt || true
 
-      - name: Save build log on failure
-        if: failure()
+      - name: Save build log
+        if: always()
         run: |
           git config user.email "ci@endlesscalendar.local"
           git config user.name "CI Bot"
@@ -58,6 +62,7 @@ jobs:
         with:
           name: endless-calendar-debug-apk
           path: app/build/outputs/apk/debug/*.apk
+          if-no-files-found: error
 
       - name: Build release APK
         if: startsWith(github.ref, 'refs/tags/v')
