@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">Endless Calendar</string>
+    <string name="agenda_widget_description">Today\'s agenda</string>
+</resources>
