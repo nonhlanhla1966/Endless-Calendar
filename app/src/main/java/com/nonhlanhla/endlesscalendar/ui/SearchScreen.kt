@@ -1,3 +1,5 @@
+@file:OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
+
 package com.nonhlanhla.endlesscalendar.ui
 
 import androidx.compose.foundation.clickable
@@ -24,6 +26,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.nonhlanhla.endlesscalendar.calendar.CalendarViewModel
 import com.nonhlanhla.endlesscalendar.data.Event

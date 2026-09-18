@@ -75,7 +75,7 @@ object HolidayProvider {
 
     private fun nthWeekday(year: Int, month: Int, day: java.time.DayOfWeek, occurrence: Int): LocalDate {
         val first = LocalDate.of(year, month, 1)
-        return if (occurrence > 0) {
+        if (occurrence > 0) {
             var date = first
             var count = 0
             while (true) {
@@ -88,7 +88,7 @@ object HolidayProvider {
         } else {
             var date = first.withDayOfMonth(first.lengthOfMonth())
             while (date.dayOfWeek != day) date = date.minusDays(1)
-            date
+            return date
         }
     }
 }
