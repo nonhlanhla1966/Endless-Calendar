@@ -39,23 +39,7 @@ jobs:
       - name: Build debug APK
         run: |
           set -o pipefail
-          gradle assembleDebug --stacktrace 2>&1 | tee build_log.txt
-          echo "---- outputs dir ----" | tee -a build_log.txt
-          find app/build/outputs -type f 2>&1 | tee -a build_log.txt || true
-
-      - name: Save build log
-        if: always()
-        run: |
-          git config user.email "ci@endlesscalendar.local"
-          git config user.name "CI Bot"
-          mkdir -p /tmp/logsave
-          cp build_log.txt /tmp/logsave/build_log.txt || echo "no log produced" > /tmp/logsave/build_log.txt
-          git checkout --orphan ci-logs-tmp
-          git rm -rf . > /dev/null 2>&1 || true
-          cp /tmp/logsave/build_log.txt ./build_log.txt
-          git add build_log.txt
-          git commit -m "CI log for run ${{ github.run_id }}"
-          git push -f origin HEAD:ci-logs
+          gradle assembleDebug --stacktrace 2>&1 | tee debug_build_log.txt
 
       - name: Upload debug APK artifact
         uses: actions/upload-artifact@v4
@@ -66,7 +50,25 @@ jobs:
 
       - name: Build release APK
         if: startsWith(github.ref, 'refs/tags/v')
-        run: gradle assembleRelease --stacktrace
+        run: |
+          set -o pipefail
+          gradle assembleRelease --stacktrace 2>&1 | tee release_build_log.txt
+
+      - name: Save build logs
+        if: always()
+        run: |
+          git config user.email "ci@endlesscalendar.local"
+          git config user.name "CI Bot"
+          mkdir -p /tmp/logsave
+          cp debug_build_log.txt /tmp/logsave/ 2>/dev/null || echo "no debug log" > /tmp/logsave/debug_build_log.txt
+          cp release_build_log.txt /tmp/logsave/ 2>/dev/null || echo "no release log" > /tmp/logsave/release_build_log.txt
+          find app/build/outputs -type f > /tmp/logsave/outputs_listing.txt 2>&1 || true
+          git checkout --orphan ci-logs-tmp
+          git rm -rf . > /dev/null 2>&1 || true
+          cp /tmp/logsave/*.txt .
+          git add *.txt
+          git commit -m "CI logs for run ${{ github.run_id }}"
+          git push -f origin HEAD:ci-logs
 
       - name: Create GitHub Release with APK
         if: startsWith(github.ref, 'refs/tags/v')
