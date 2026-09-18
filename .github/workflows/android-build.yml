@@ -37,7 +37,21 @@ jobs:
           gradle-version: '8.7'
 
       - name: Build debug APK
-        run: gradle assembleDebug --stacktrace
+        run: gradle assembleDebug --stacktrace 2>&1 | tee build_log.txt
+
+      - name: Save build log on failure
+        if: failure()
+        run: |
+          git config user.email "ci@endlesscalendar.local"
+          git config user.name "CI Bot"
+          mkdir -p /tmp/logsave
+          cp build_log.txt /tmp/logsave/build_log.txt || echo "no log produced" > /tmp/logsave/build_log.txt
+          git checkout --orphan ci-logs-tmp
+          git rm -rf . > /dev/null 2>&1 || true
+          cp /tmp/logsave/build_log.txt ./build_log.txt
+          git add build_log.txt
+          git commit -m "CI log for run ${{ github.run_id }}"
+          git push -f origin HEAD:ci-logs
 
       - name: Upload debug APK artifact
         uses: actions/upload-artifact@v4
